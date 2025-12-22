@@ -7,7 +7,7 @@ Created on Mon Dec 22 15:24:53 2025
 """
 
 # internal modules
-from measurements.uvvis import NirvanaUVVis
+from nirvana10k.measurements.uvvis import NirvanaUVVis
 
 # echfive
 import h5py

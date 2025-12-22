@@ -7,13 +7,7 @@ Created on Mon Dec 22 15:23:50 2025
 """
 
 # load relevant modules
-import sys
-from pathlib import Path
-
-# Adjusting the sys.path to include the root of the package
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-
-from read.h5tosample import h5_to_samples
+from nirvana10k.read.h5tosample import h5_to_samples
 
 # plotting functions
 import matplotlib.pyplot as plt
