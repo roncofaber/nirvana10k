@@ -28,7 +28,7 @@ nirvana10ks = h5_to_samples(filename, erange=[380, 600])
 
 #%%
 
-spots = [0,1,2]
+spots = [0,1,2,3]
 
 ino = nirvana10ks[0].get_inhomogenity(spots=spots)
 
@@ -56,7 +56,7 @@ ax.axhline(y=np.mean(mean_values), linestyle="--", color="gray", zorder=-10)
 # ax.legend(fontsize=fs-1, framealpha=1, edgecolor='black', loc="upper right", 
           # ncols=1, title=None, title_fontsize=14)
 
-ax.set_ylim(bottom=0)  # Adjust according to your data range
+# ax.set_ylim(bottom=0)  # Adjust according to your data range
 ax.set_xlim(left=-0.5, right=len(nirvana10ks)-0.5)
 
 ax.set_xticks(x_indices)  # Fires at each sample index
