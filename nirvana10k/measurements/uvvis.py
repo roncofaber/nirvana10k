@@ -11,13 +11,8 @@ import numpy as np
 import scipy
 from scipy.integrate import simpson
 
-# plotting stuff
-import matplotlib.pyplot as plt
-import seaborn as sns
-cm = 1/2.54  # centimeters in inches
-sns.set_theme(style="white")
-sns.set_style("ticks")
-fs = 10
+# internal modules
+from nirvana10k.utils.plotting import plot_sample
 
 #%%
 
@@ -65,12 +60,12 @@ class NirvanaUVVis:
     def _initialize_sample(self):
         
         # get dark and blank
-        dark_sample  = self._dark_sample
+        dark_sample  = self._dark
         
         if self._is_blank:
             blank_sample = self
         else:
-            blank_sample = self._blank_sample
+            blank_sample = self._blank
         
         # get corrected intensities (remove dark)
         self._cor_intensities = abs(np.clip(
@@ -112,14 +107,14 @@ class NirvanaUVVis:
     
     @property
     def _is_dark(self):
-        if self._dark_sample is None and self._blank_sample is None:
+        if self._dark is None and self._blank is None:
             return True
         else:
             return False
       
     @property
     def _is_blank(self):
-        if self._dark_sample is not None and self._blank_sample is None:
+        if self._dark is not None and self._blank is None:
             return True
         else:
             return False
@@ -141,8 +136,8 @@ class NirvanaUVVis:
     
     # set references (blank, dark)
     def set_references(self, dark_sample=None, blank_sample=None):
-        self._dark_sample  = dark_sample
-        self._blank_sample = blank_sample
+        self._dark  = dark_sample
+        self._blank = blank_sample
         return
     
     # set proper mask according to erange
@@ -152,53 +147,49 @@ class NirvanaUVVis:
         return
     
     # get inhomogenity within sample
-    def get_inhomogenity(self, spots=None):
+    def get_inhomogenity(self, value="cor_intensities", spots=None):
         
         if self.nspots < 2:
             raise ValueError("At least two spots are required to calculate inhomogeneity.")
         
         if spots is None:
             spots = list(range(self.nspots))
+            
+        # get relevant values
+        value2calc = getattr(self, value)
         
         abs_diffs = []
         for cc, ii in enumerate(spots):
             for jj in spots[cc+1:]:
                 
-                abs_diff  = np.abs(self.absorbances[jj] - self.absorbances[ii])
+                abs_diff  = np.abs(value2calc[jj] - value2calc[ii])
                 area_diff = simpson(abs_diff, self.wavelengths)
                 abs_diffs.append(area_diff)
         
         return np.array(abs_diffs)
     
-    def plot_sample(self, spots=None):
+    # main plotting function
+    def _plot_sample(self, value="absorbances", spots=None):
         
+        value2plot = getattr(self, value)
         
         if spots is None:
             spots = list(range(self.nspots))
         
-        fig, ax = plt.subplots(figsize=(9.5*cm, 6*cm))
+        # plot sample
+        plot_sample(value2plot, self.wavelengths, spots, self.poskey, self._erange, value)
         
-        for spot in spots:
-            
-            absorbance = self.absorbances[spot]
-            label = self.y_positions[spot]
-            
-            ax.plot(self.wavelengths, absorbance, label=label)
-        
-        ax.set_title(self.poskey)
-        
-        ax.set_xlabel("Wavelength [nm]", fontsize=fs)
-        ax.set_ylabel("Absorbance [-]", fontsize=fs)
-        ax.yaxis.set_tick_params(labelsize=fs-1)
-        ax.xaxis.set_tick_params(labelsize=fs-1)
-        
-        ax.set_xlim(left=self._erange[0], right=self._erange[1])
-        
-        # set legend
-        ax.legend(fontsize=fs-1, framealpha=1, edgecolor='k', loc="upper right",
-                  ncols=1, title=None, title_fontsize=14)
-        
-        fig.tight_layout()
-        fig.show()
-        
+        return
+    
+    # wrapper to plot attributes    
+    def plot_transmissions(self, spots=None):
+        self._plot_sample(value="transmissions", spots=spots)
+        return
+
+    def plot_absorbances(self, spots=None):
+        self._plot_sample(value="absorbances", spots=spots)
+        return
+    
+    def plot_intensities(self, spots=None):
+        self._plot_sample(value="cor_intensities", spots=spots)
         return
